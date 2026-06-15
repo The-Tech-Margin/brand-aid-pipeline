@@ -11,8 +11,8 @@ Turn a campaign brief into on-brand, ready-to-post social ad creatives at scale.
 reuses uploaded hero imagery where it exists, generates the rest with **your selected image model**
 (via the Vercel AI Gateway), composites
 final creatives in **three aspect ratios** with a localized message overlay and brand framing, runs
-**brand-compliance** and **legal-content** checks, and persists everything to **Supabase** — all
-behind a private, themeable UI.
+**brand-compliance** and **legal-content** checks, and persists everything to **your Postgres-compatible
+backend** (row-level security + object storage) — all behind a private, themeable UI.
 
 > Author: **@thetechmargin** · © 2026 TheTechMargin
 
@@ -24,7 +24,8 @@ Brand Helper is an **open-source design toolkit for solo founders and small busi
 is agency-quality, on-brand social creative without the agency, the per-seat SaaS, or a designer on
 call. Bring a one-line brief; get back ready-to-post creatives in three aspect ratios, on your own
 colors and logo, with brand-compliance and legal checks already done. Self-host it, theme it, and run
-your whole pipeline on your own Supabase + Vercel for the cost of the image-model calls.
+your whole pipeline on your own Postgres backend + Vercel for the cost of the image-model calls.
+(Supabase is one easy option; any Postgres + RLS + object storage works.)
 
 The same engine scales up: a **global consumer-goods team** launching hundreds of localized campaigns
 a month — drowning in manual production, inconsistent brand quality, and slow approvals — gets the
@@ -54,7 +55,7 @@ flowchart TD
   F --> G[Compositor — sharp<br/>crop + overlay + brand framing<br/>1:1 / 9:16 / 16:9]
   G --> H[Compliance: logo / color / WCAG contrast]
   G --> I[Legal: prohibited-terms scan]
-  H --> J[(Supabase Postgres + Storage)]
+  H --> J[(Postgres + object storage)]
   I --> J
   J --> K[Run report<br/>live progress + export]
   J --> L[Creative browser<br/>by product to ratio + ZIP]
@@ -103,7 +104,7 @@ prompt is deliberately generic and never reveals whether an email is on the invi
   self-serve "just let me make creatives" experience.
 
 **First admin (bootstrap).** Add your email to `brand_helper.admin_allowlist` (migration `0006` or a
-SQL insert), create your auth user in the Supabase dashboard (public sign-ups are off), then sign in
+SQL insert), create an auth user in your auth provider (public sign-ups are off), then sign in
 by magic link — the allowlist promotes you to admin on first sign-in.
 
 **Local dev shortcut.** In a dev build only, `/login` shows a **Dev sign-in (local only)** link
@@ -137,7 +138,7 @@ npm install
 cp .env.example .env.local   # then fill in (or: vercel env pull --environment=production .env.local)
 ```
 
-Apply the database schema (Supabase SQL editor or CLI), in order:
+Apply the database schema to your Postgres backend (any SQL client or your provider's CLI), in order:
 
 ```
 supabase/migrations/0001_init.sql   # tables, RLS, private storage bucket
@@ -150,8 +151,9 @@ supabase/migrations/0007_themes.sql   # user themes + admin-set global default t
 supabase/migrations/0008_brand.sql   # per-user brand identity + admin-set global default
 ```
 
-Migration `0004` auto-exposes the `brand_helper` schema to the API. If you skipped it (or created the
-tables by hand), expose it in **Supabase → Project Settings → API → Exposed schemas**. Then:
+Migration `0004` auto-exposes the `brand_helper` schema to the REST API. If you skipped it (or created
+the tables by hand), expose the schema to your REST API (e.g. PostgREST's exposed-schemas config) per
+your provider. Then:
 
 ```bash
 npm run seed       # upload placeholder input assets so reuse-vs-generate is demoable
@@ -165,35 +167,35 @@ production (NODE_ENV guard + the proxy) and never exists in a production build.
 
 ### Environment variables
 
-| Variable                        | Scope       | Required | Purpose                                                |
-| ------------------------------- | ----------- | -------- | ------------------------------------------------------ |
-| `NEXT_PUBLIC_SUPABASE_URL`      | browser     | yes      | Supabase project URL                                   |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser     | yes      | Supabase anon key (RLS-scoped)                         |
-| `SUPABASE_SERVICE_ROLE_KEY`     | server-only | yes      | Pipeline writes + signed URLs (bypasses RLS)           |
-| `SUPABASE_DB_SCHEMA`            | server-only | no       | Defaults to `brand_helper`                             |
-| `SUPABASE_STORAGE_BUCKET`       | server-only | no       | Defaults to `brand-helper`                             |
-| `AI_GATEWAY_API_KEY`            | server-only | gen path | Vercel AI Gateway key — image generation + AI edits    |
-| `SOUND_ENABLED`                 | server-only | no       | Feature flag for the sound stub (keep `false`)         |
-| `NEXT_PUBLIC_APP_NAME`          | browser     | no       | UI label                                               |
-| `NEXT_PUBLIC_SITE_URL`          | browser     | prod     | Stable base URL for auth email redirects (your domain) |
-| `NEXT_PUBLIC_APP_ORIGINS`       | browser     | no       | Extra allowed auth-callback origins, comma-separated   |
-| `PIPELINE_RUN_USER_ID`          | server-only | CLI      | Seeded auth user UUID the CLI runs own (RLS owner)     |
-| `DEV_LOGIN_EMAIL`               | server-only | dev      | Email for `GET /auth/dev-login` (local builds only)    |
+| Variable                        | Scope       | Required | Purpose                                                                  |
+| ------------------------------- | ----------- | -------- | ------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`      | browser     | yes      | Backend REST/API base URL                                                |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser     | yes      | Public client key (RLS-scoped)                                           |
+| `SUPABASE_SERVICE_ROLE_KEY`     | server-only | yes      | Service/admin credentials — pipeline writes + signed URLs (bypasses RLS) |
+| `SUPABASE_DB_SCHEMA`            | server-only | no       | Defaults to `brand_helper`                                               |
+| `SUPABASE_STORAGE_BUCKET`       | server-only | no       | Defaults to `brand-helper`                                               |
+| `AI_GATEWAY_API_KEY`            | server-only | gen path | Vercel AI Gateway key — image generation + AI edits                      |
+| `SOUND_ENABLED`                 | server-only | no       | Feature flag for the sound stub (keep `false`)                           |
+| `NEXT_PUBLIC_APP_NAME`          | browser     | no       | UI label                                                                 |
+| `NEXT_PUBLIC_SITE_URL`          | browser     | prod     | Stable base URL for auth email redirects (your domain)                   |
+| `NEXT_PUBLIC_APP_ORIGINS`       | browser     | no       | Extra allowed auth-callback origins, comma-separated                     |
+| `PIPELINE_RUN_USER_ID`          | server-only | CLI      | Seeded auth user UUID the CLI runs own (RLS owner)                       |
+| `DEV_LOGIN_EMAIL`               | server-only | dev      | Email for `GET /auth/dev-login` (local builds only)                      |
 
 **Access is invite-only (magic link).** Sign-in is passwordless — `/login` emails a
-one-time link. Disable public sign-ups in **Supabase → Authentication → Providers →
-Email** so the only way in is an invite. Admins are defined in the database — add an
+one-time link. Disable public sign-ups in your auth provider (email provider settings)
+so the only way in is an invite. Admins are defined in the database — add an
 email to `brand_helper.admin_allowlist` and a trigger stamps `members.role` from it
 (migration `0006`); admins invite visitors by email from the dashboard (each invited
 visitor can run the full pipeline on their own RLS-scoped records). The first admin's
-auth user is created in the Supabase dashboard (sign-ups are off), then they sign in
+auth user is created directly in your auth provider (sign-ups are off), then they sign in
 via magic link.
 
 **Auth email redirects.** Sign-in links are built from
 [`src/lib/get-url.ts`](src/lib/get-url.ts), which is fully env-driven — **no host is hardcoded** —
 resolving `NEXT_PUBLIC_SITE_URL` (prod) → `NEXT_PUBLIC_VERCEL_URL` (Vercel auto, previews) →
 `http://localhost:3000` (local). Set `NEXT_PUBLIC_SITE_URL` to your own stable domain and add its
-`…/auth/callback` to **Supabase → Authentication → URL Configuration → Redirect URLs**, or links are
+`…/auth/callback` to your auth provider's redirect-URL allowlist, or links are
 rejected. Any extra origins the app also answers to (a vanity domain, a stable `*.vercel.app` alias)
 go in `NEXT_PUBLIC_APP_ORIGINS` (comma-separated) so callbacks from them validate too.
 
@@ -222,9 +224,9 @@ campaign PDF, a brand style sheet, per-creative spec sheets, and platform-sized 
 ## Deploy to Vercel
 
 The project is linked (`.vercel/project.json`). Set the same variables from the table above in
-**Vercel → Settings → Environment Variables** (the Supabase integration populates the Supabase set
-automatically; add `AI_GATEWAY_API_KEY`). `next build` needs no live secrets. Then push — CI runs on
-every PR and Vercel builds from `main`.
+**Vercel → Settings → Environment Variables** (your hosting provider's database integration, if any,
+can populate the backend set automatically; add `AI_GATEWAY_API_KEY`). `next build` needs no live
+secrets. Then push — CI runs on every PR and Vercel builds from `main`.
 
 ---
 
@@ -236,10 +238,11 @@ and an admin-set global default) with no code edits, and **no brand hostname is 
 source** — auth URLs come entirely from env (see [`src/lib/get-url.ts`](src/lib/get-url.ts)). To stand
 up your own instance:
 
-1. **Use your own Supabase project.** Create a project, run the migrations in `supabase/migrations/`
-   in order, and disable public sign-ups (Auth → Providers → Email). Set the Supabase env vars and
-   **rotate any keys** that were ever shared. _(Migration `0004` adds `brand_helper` to the project's
-   PostgREST schema allowlist; on a dedicated project it simply exposes your one schema.)_
+1. **Point it at your own Postgres-compatible backend (with RLS + object storage).** Stand up a
+   backend, run the migrations in `supabase/migrations/` in order, and disable public sign-ups in your
+   auth provider. Set the backend env vars and **rotate any keys** that were ever shared. _(Migration
+   `0004` adds `brand_helper` to the REST API's exposed-schema allowlist; on a dedicated backend it
+   simply exposes your one schema.)_
 2. **Seed your first admin.** Replace the seeded owner email in
    `supabase/migrations/0006_admin_at_db_layer.sql` (and `DEV_LOGIN_EMAIL`) with your own, or insert
    your email into `brand_helper.admin_allowlist`.
@@ -260,7 +263,7 @@ up your own instance:
 npm run pipeline:run -- examples/brief.summer-glow.json
 ```
 
-Validates the brief, runs the full pipeline against Supabase + the AI Gateway, and writes
+Validates the brief, runs the full pipeline against the database + the AI Gateway, and writes
 `reports/<campaignId>.json` and `.md`. Requires `PIPELINE_RUN_USER_ID`. Chunking only matters for
 serverless time limits, so the CLI runs in-process (equivalent to inline) and prints the mode the
 web app would auto-select.
@@ -299,10 +302,10 @@ compliance, legal, and log detail is on its run report page.
 
 ## Design decisions & deviations
 
-- **Storage is Supabase-only** (the brief's "save to a local folder organized by product and aspect
-  ratio" is satisfied via the Storage path convention `creatives/{campaign}/{product}/{ratio}/…`
+- **Storage is object-storage-only** (the brief's "save to a local folder organized by product and
+  aspect ratio" is satisfied via the storage path convention `creatives/{campaign}/{product}/{ratio}/…`
   **plus** the ZIP export that reproduces that folder layout). No local disk is the source of truth.
-- **Auth: full Supabase Auth, not the spec's shared password gate.** Per-user identity + RLS is
+- **Auth: full provider-backed auth, not the spec's shared password gate.** Per-user identity + RLS is
   strictly more robust than one shared password. Sign-in runs through a **server action** so every
   attempt is **rate-limited** (DB-backed, hashed IP key — in-memory limiters don't survive serverless
   cold starts). The limiter lives in `src/features/auth/rate-limit.ts`, invoked at the single auth entry point.
@@ -336,9 +339,9 @@ compliance, legal, and log detail is on its run report page.
 
 - **Access is invite-only** (passwordless magic link); there is no public sign-up, and the first
   admin is seeded in the database (`admin_allowlist`).
-- **Storage is Supabase-only.** The brief's "save outputs to a folder organized by product and aspect
-  ratio" is met by the Storage path convention plus the ZIP export — a local CLI run writes the run
-  report to `reports/`, not the images to disk.
+- **Storage is object-storage-only.** The brief's "save outputs to a folder organized by product and
+  aspect ratio" is met by the storage path convention plus the ZIP export — a local CLI run writes the
+  run report to `reports/`, not the images to disk.
 - **Image generation needs `AI_GATEWAY_API_KEY`.** The reuse path, build, and tests run without it;
   only the generate path calls the gateway. Per-product failures are recorded and skipped, never
   aborting the whole run.
@@ -367,7 +370,8 @@ compliance, legal, and log detail is on its run report page.
 - Private storage is served via short-lived signed URLs; no public bucket policies.
 - CI runs `npm audit --audit-level=high` (0 high/critical), **gitleaks** secret scanning, and
   regenerates the SBOM. Dependabot keeps dependencies patched.
-- **Rotate** the Supabase service-role key if it has ever been shared outside Vercel.
+- **Rotate** the database service/admin credentials (service role) if they have ever been shared
+  outside Vercel.
 
 ### SBOM
 
@@ -391,7 +395,7 @@ Vitest runner, so run `nvm use` first. Package manager is **npm**. Full contribu
 - Test data uses **local `fixture(overrides)` builders**, not shared global fixtures; assertions are
   explicit (no snapshots).
 - **Examples are tests**: every brief in `examples/` is validated, JSON/YAML twins must stay
-  deep-equal, and each ships through the real `runCampaign` pipeline with fakes (no Supabase/AI) so
+  deep-equal, and each ships through the real `runCampaign` pipeline with fakes (no live backend/AI) so
   the docs, seed, and CLI examples can't silently break.
 
 **Quality scripts** (each is also a CI gate): `npm run lint` (ESLint + full `jsx-a11y`),
