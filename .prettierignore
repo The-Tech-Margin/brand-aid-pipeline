@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+build
+coverage
+sbom.json
+package-lock.json
+public/*.html
+*.zip

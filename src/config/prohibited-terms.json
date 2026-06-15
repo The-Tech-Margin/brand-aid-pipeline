@@ -1,0 +1,100 @@
+{
+  "$schema": "./prohibited-terms.schema.json",
+  "description": "Configurable legal/compliance lexicon scanned against campaign messages and any generated copy. Each entry has a severity and a reason surfaced in the run report. Editable without code changes.",
+  "version": "1.0.0",
+  "locale_scope": "en",
+  "rules": [
+    {
+      "term": "cure",
+      "match": "word",
+      "severity": "fail",
+      "category": "unsupported-health-claim",
+      "reason": "Implies a medical cure; disallowed for consumer-goods advertising without regulatory substantiation."
+    },
+    {
+      "term": "cures",
+      "match": "word",
+      "severity": "fail",
+      "category": "unsupported-health-claim",
+      "reason": "Implies a medical cure."
+    },
+    {
+      "term": "guaranteed",
+      "match": "word",
+      "severity": "warn",
+      "category": "absolute-claim",
+      "reason": "Absolute guarantee claims often require substantiation and clear terms."
+    },
+    {
+      "term": "100%",
+      "match": "substring",
+      "severity": "warn",
+      "category": "absolute-claim",
+      "reason": "Absolute percentage claims need evidence; verify before publishing."
+    },
+    {
+      "term": "clinically proven",
+      "match": "phrase",
+      "severity": "warn",
+      "category": "substantiation-required",
+      "reason": "Requires citable clinical evidence on file."
+    },
+    {
+      "term": "doctor recommended",
+      "match": "phrase",
+      "severity": "warn",
+      "category": "substantiation-required",
+      "reason": "Requires documented professional endorsement."
+    },
+    {
+      "term": "miracle",
+      "match": "word",
+      "severity": "warn",
+      "category": "hyperbole",
+      "reason": "Exaggerated efficacy claim; high regulatory and brand-trust risk."
+    },
+    {
+      "term": "risk-free",
+      "match": "phrase",
+      "severity": "warn",
+      "category": "absolute-claim",
+      "reason": "Implies no risk; usually requires qualification."
+    },
+    {
+      "term": "FDA approved",
+      "match": "phrase",
+      "severity": "fail",
+      "category": "regulatory-misuse",
+      "reason": "Most consumer goods are not FDA-approved; misuse is a legal exposure."
+    },
+    {
+      "term": "anti-aging",
+      "match": "phrase",
+      "severity": "warn",
+      "category": "substantiation-required",
+      "reason": "Regulated efficacy claim in several markets; verify allowed wording per region."
+    },
+    {
+      "term": "detox",
+      "match": "word",
+      "severity": "warn",
+      "category": "unsupported-health-claim",
+      "reason": "Vague health benefit; commonly challenged by regulators."
+    },
+    {
+      "term": "best",
+      "match": "word",
+      "severity": "info",
+      "category": "superlative",
+      "reason": "Unqualified superlative; consider 'one of the best' or substantiate."
+    },
+    {
+      "term": "free",
+      "match": "word",
+      "severity": "info",
+      "category": "offer-claim",
+      "reason": "If used as a price/offer, ensure conditions are disclosed nearby."
+    }
+  ],
+  "notes": "match types: 'word' = whole-word boundary, case-insensitive; 'phrase' = multi-word, case-insensitive; 'substring' = raw contains. severity: fail | warn | info. Add region-specific lists by duplicating this file as prohibited-terms.<locale>.json and merging at load time."
+}

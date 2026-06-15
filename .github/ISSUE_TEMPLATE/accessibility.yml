@@ -1,0 +1,50 @@
+name: Accessibility issue
+description: Report an accessibility barrier (WCAG, keyboard, screen reader, contrast, motion)
+labels: [accessibility, bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping make Brand Helper usable for everyone. See [ACCESSIBILITY.md](../blob/main/ACCESSIBILITY.md).
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How much does this block use?
+      options:
+        - Blocker — feature is unusable with assistive tech
+        - Serious — usable only with significant difficulty
+        - Moderate — works but with friction
+        - Minor — cosmetic / polish
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What's the barrier?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Using keyboard / screen reader …
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: tech
+    attributes:
+      label: Assistive tech & browser
+      placeholder: VoiceOver + Safari 18 / NVDA + Firefox / keyboard-only
+    validations:
+      required: false
+  - type: input
+    id: wcag
+    attributes:
+      label: WCAG criterion (if known)
+      placeholder: e.g. 1.4.3 Contrast (Minimum), 2.1.1 Keyboard
+    validations:
+      required: false

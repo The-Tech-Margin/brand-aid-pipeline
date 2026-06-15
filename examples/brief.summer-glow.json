@@ -1,0 +1,21 @@
+{
+  "campaign_name": "Summer Glow 2026",
+  "products": [
+    {
+      "name": "HydraBoost Serum",
+      "description": "Lightweight hydrating facial serum with hyaluronic acid for a dewy, all-day glow",
+      "input_assets": ["serum-front.png"]
+    },
+    {
+      "name": "SunShield SPF50",
+      "description": "Daily mineral sunscreen, reef-safe, no white cast, weightless finish",
+      "input_assets": []
+    }
+  ],
+  "target_region": "Japan",
+  "target_audience": "Urban women, 25-40, skincare-conscious, value clean ingredients and minimalist routines",
+  "campaign_message": "Glow that lasts all day",
+  "locale": "ja-JP",
+  "brand_palette": ["#E904E5", "#09FFF0", "#a1ff00"],
+  "aspect_ratios": ["1:1", "9:16", "16:9"]
+}

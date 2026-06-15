@@ -1,0 +1,237 @@
+@import 'tailwindcss';
+
+/* Map semantic + brand tokens to Tailwind utilities (bg-background, text-brand-pink, font-display…). */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-brand-pink: var(--brand-pink);
+  --color-brand-lime: var(--brand-lime);
+  --color-brand-cyan: var(--brand-cyan);
+  --color-brand-hot-red: var(--brand-hot-red);
+  --color-brand-goldenrod: var(--brand-goldenrod);
+
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  /* --font-decorative is injected at runtime when a brand picks a Google Font (see
+     layout.tsx); unset, it falls back to the built-in Pacifico. */
+  --font-display: var(--font-decorative, var(--font-pacifico)), ui-serif, cursive;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-terminal: var(--font-ibm-plex-mono), ui-monospace, monospace;
+
+  --radius: var(--radius-token);
+}
+
+/* Default skin = branded / dark (neon accents on neutral dark gray). Drives SSR
+   before hydration. Surfaces are neutral grays; brand identity lives in the neon
+   accents. Radius follows the TTM brand scale (3px default). */
+:root,
+[data-theme='branded'][data-mode='dark'] {
+  --background: #0a0a0a;
+  --card: #161616;
+  --muted: #1f1f1f;
+  --border: #2a2a2a;
+  --muted-foreground: #a1a1aa;
+  --foreground: #ffffff;
+  --brand-pink: #e904e5;
+  --brand-lime: #a1ff00;
+  --brand-cyan: #09fff0;
+  --brand-hot-red: #ff0080;
+  --brand-goldenrod: #ff9500;
+  --primary: #e904e5;
+  --primary-foreground: #ffffff;
+  --secondary: #09fff0;
+  --secondary-foreground: #0a0a0a;
+  --tertiary: #a1ff00;
+  --tertiary-foreground: #0a0a0a;
+  --accent: #a1ff00;
+  --accent-foreground: #0a0a0a;
+  --ring: #09fff0;
+  --radius-token: 0.2rem;
+  --radius-lg: 0.4rem;
+}
+
+/* Branded / light = the terminal palette (warm paper). */
+[data-theme='branded'][data-mode='light'] {
+  --background: #f2ede1;
+  --card: #fbf8f0;
+  --muted: #e7e0d2;
+  --border: #d8cfba;
+  --muted-foreground: #5c574d;
+  --foreground: #2b2a28;
+  --brand-pink: #c1248f;
+  --brand-lime: #5f7d1f;
+  --brand-cyan: #0a8f86;
+  --brand-hot-red: #c11f63;
+  --brand-goldenrod: #b06a05;
+  --primary: #c1248f;
+  --primary-foreground: #ffffff;
+  --secondary: #0a8f86;
+  --secondary-foreground: #ffffff;
+  --tertiary: #5f7d1f;
+  --tertiary-foreground: #ffffff;
+  --accent: #5f7d1f;
+  --accent-foreground: #ffffff;
+  --ring: #0a8f86;
+  --radius-token: 0.2rem;
+  --radius-lg: 0.4rem;
+}
+
+/* Plain / dark = neutral, no brand hues (brand-* collapse to grays). */
+[data-theme='plain'][data-mode='dark'] {
+  --background: #0a0a0a;
+  --card: #161616;
+  --muted: #1f1f1f;
+  --border: #2a2a2a;
+  --muted-foreground: #a1a1aa;
+  --foreground: #ededed;
+  --brand-pink: #e5e5e5;
+  --brand-lime: #d4d4d8;
+  --brand-cyan: #d4d4d8;
+  --brand-hot-red: #e5e5e5;
+  --brand-goldenrod: #d4d4d8;
+  --primary: #e5e5e5;
+  --primary-foreground: #0a0a0a;
+  --secondary: #3f3f46;
+  --secondary-foreground: #ededed;
+  --tertiary: #52525b;
+  --tertiary-foreground: #ededed;
+  --accent: #52525b;
+  --accent-foreground: #ededed;
+  --ring: #a1a1aa;
+  --radius-token: 0.2rem;
+  --radius-lg: 0.4rem;
+}
+
+/* Plain / light = neutral light. */
+[data-theme='plain'][data-mode='light'] {
+  --background: #ffffff;
+  --card: #ffffff;
+  --muted: #f4f4f5;
+  --border: #e4e4e7;
+  --muted-foreground: #71717a;
+  --foreground: #171717;
+  --brand-pink: #18181b;
+  --brand-lime: #3f3f46;
+  --brand-cyan: #3f3f46;
+  --brand-hot-red: #18181b;
+  --brand-goldenrod: #3f3f46;
+  --primary: #18181b;
+  --primary-foreground: #ffffff;
+  --secondary: #e4e4e7;
+  --secondary-foreground: #18181b;
+  --tertiary: #f4f4f5;
+  --tertiary-foreground: #18181b;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --ring: #71717a;
+  --radius-token: 0.2rem;
+  --radius-lg: 0.4rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  /* Smooth in-page anchor scrolling (TOC). The reduced-motion block below forces
+     scroll-behavior: auto, so this is accessibility-safe. */
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Named z-index scale — components reference var(--z-*), never raw numbers.
+   See design-system.md. Theme-independent, so defined once. */
+:root {
+  --z-base: 1;
+  --z-content: 10;
+  --z-controls: 20;
+  --z-card-menu: 30;
+  --z-header: 50;
+  --z-menu: 55;
+  --z-modal: 60;
+  --z-overlay: 9999;
+}
+
+/* Dialog / lightbox backdrop (Tier-2 bh- domain class). */
+.bh-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: color-mix(in srgb, var(--color-background) 80%, black);
+}
+
+/* Roving-focus cell in the creative grid — visible 2D keyboard focus. */
+.bh-grid-cell:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Brand gradient text (cyan → pink → hot-red, per brand.thetechmargin.com) —
+   branded only; plain renders solid foreground. */
+.gradient-text {
+  background: linear-gradient(90deg, #09fff0, #e904e5, #ff0080);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+[data-theme='plain'] .gradient-text {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: var(--color-foreground);
+}
+
+/* Brand footer is omitted on the plain (un-branded) skin. */
+[data-theme='plain'] .brand-footer {
+  display: none;
+}
+
+/* Skip-to-content link (a11y) — visible only on focus. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 50;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-card);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}

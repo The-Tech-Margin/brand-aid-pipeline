@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run docs:check
+      - run: npm run typecheck
+      - run: npm test
+      # Build needs no live secrets — env.ts getters are lazy and only fire at
+      # request time. Placeholder public values keep any module-scope reads happy.
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_APP_NAME: Brand Helper
+
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # gitleaks scans full history
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Audit dependencies (fail on high/critical)
+        run: npm audit --audit-level=high
+      - name: Regenerate SBOM
+        run: npm run sbom
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: sbom.json
+      # Use the gitleaks CLI (MIT, free) rather than gitleaks-action, which requires
+      # a paid GITLEAKS_LICENSE for organization repos.
+      - name: Secret scan (gitleaks CLI)
+        run: |
+          VERSION=8.18.4
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" -o /tmp/gitleaks.tgz
+          tar -xzf /tmp/gitleaks.tgz -C /tmp gitleaks
+          /tmp/gitleaks detect --source . --config .gitleaks.toml --redact --no-banner

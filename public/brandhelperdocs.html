@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="TheTechMargin" />
+    <title>Brand Helper — Docs</title>
+    <style>
+      /* Mirrors the app's branded-dark skin: neutral gray surfaces, neon accents.
+         Standalone doc — served from /public; no build step. */
+      :root {
+        --bg: #0a0a0a;
+        --card: #161616;
+        --muted: #1f1f1f;
+        --border: #2a2a2a;
+        --fg: #ededed;
+        --dim: #a1a1aa;
+        --pink: #e904e5;
+        --lime: #a1ff00;
+        --cyan: #09fff0;
+        --red: #ff0080;
+        --gold: #ff9500;
+        --radius: 3px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.6 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 48px 20px 80px;
+      }
+      header {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 24px;
+        margin-bottom: 8px;
+      }
+      h1 {
+        font-size: 2rem;
+        margin: 0 0 6px;
+        letter-spacing: -0.01em;
+      }
+      .grad {
+        background: linear-gradient(90deg, var(--cyan), var(--pink), var(--red));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+      }
+      .sub {
+        color: var(--dim);
+        margin: 0;
+      }
+      .toc {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 24px 0 8px;
+      }
+      .toc a {
+        font-size: 0.82rem;
+        color: var(--dim);
+        text-decoration: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 4px 10px;
+      }
+      .toc a:hover {
+        color: var(--fg);
+        border-color: var(--cyan);
+      }
+      h2 {
+        font-size: 1.25rem;
+        margin: 44px 0 12px;
+        padding-left: 10px;
+        border-left: 3px solid var(--pink);
+      }
+      h2.cyan {
+        border-color: var(--cyan);
+      }
+      h2.lime {
+        border-color: var(--lime);
+      }
+      h2.gold {
+        border-color: var(--gold);
+      }
+      p {
+        color: var(--fg);
+      }
+      a {
+        color: var(--cyan);
+      }
+      ol,
+      ul {
+        color: var(--fg);
+      }
+      li {
+        margin: 4px 0;
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 8px 16px;
+        font-weight: 600;
+        text-decoration: none;
+        color: var(--bg);
+        background: var(--cyan);
+        border-radius: var(--radius);
+      }
+      footer {
+        margin-top: 56px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--dim);
+        font-size: 0.85rem;
+        text-align: center;
+      }
+      footer .heart {
+        color: var(--red);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Brand Helper — <span class="grad">Docs</span></h1>
+        <p class="sub">
+          Turn a campaign brief into on-brand, ready-to-post social creatives — generated,
+          composited, and compliance-checked at scale.
+        </p>
+        <nav class="toc">
+          <a href="#what">What it is</a>
+          <a href="#request">Request access</a>
+          <a href="#signin">Signing in</a>
+          <a href="#using">Using the pipeline</a>
+          <a href="#help">More help</a>
+        </nav>
+      </header>
+
+      <h2 id="what">What is Brand Helper?</h2>
+      <p>
+        Brand Helper is an open creative-automation toolkit for solo founders and small teams. You
+        describe a campaign (products, audience, message, aspect ratios) and it generates or reuses
+        hero imagery, composites on-brand creatives in every ratio, and runs brand-compliance and
+        legal checks — then lets you browse, edit, and export the results.
+      </p>
+
+      <h2 id="request" class="gold">Requesting access</h2>
+      <p>
+        Brand Helper is invite-only. If you don&rsquo;t have an invite yet, request one — an admin
+        reviews every request.
+      </p>
+      <ol>
+        <li>On the sign-in or landing page, click <strong>Request access</strong>.</li>
+        <li>
+          Enter your <strong>name</strong>, <strong>organization</strong>, and the
+          <strong>email</strong> you&rsquo;ll sign in with.
+        </li>
+        <li>An admin reviews your request and approves or declines it.</li>
+        <li>
+          If approved, you&rsquo;ll receive a passwordless <strong>magic-link</strong> email — click
+          it to sign in.
+        </li>
+      </ol>
+      <a class="btn" href="/login">Go to sign-in</a>
+
+      <h2 id="signin" class="cyan">Signing in</h2>
+      <p>
+        Sign-in is passwordless. Enter your email on the sign-in page and we email you a one-time
+        link — there&rsquo;s no password to remember. Links are only sent to approved members, so if
+        nothing arrives, you may not have access yet (see
+        <a href="#request">Requesting access</a>). An admin can revoke or re-instate access at any
+        time.
+      </p>
+
+      <h2 id="using" class="lime">Using the pipeline</h2>
+      <ol>
+        <li>
+          <strong>New campaign</strong> — paste or build a brief (campaign name, products, audience,
+          message, aspect ratios). Only a product name is required; sensible defaults fill the rest.
+        </li>
+        <li>
+          <strong>Run</strong> — Brand Helper generates or reuses a hero per product, composites a
+          creative in each aspect ratio, and runs compliance + legal checks.
+        </li>
+        <li>
+          <strong>Review</strong> — open the run report for pass rates and flags, browse the
+          creatives by product and ratio, refine one in the editor, and export.
+        </li>
+      </ol>
+      <p>
+        Once signed in, the in-app <strong>Help</strong> page has a full walk-through, keyboard
+        shortcuts, and example briefs you can run with one click.
+      </p>
+
+      <h2 id="help">More help</h2>
+      <p>
+        Signed-in users: open <strong>Help</strong> from the menu. Press <strong>?</strong> anywhere
+        for keyboard shortcuts, or <strong>⌘K</strong> / <strong>Ctrl K</strong> for quick actions.
+      </p>
+
+      <footer>
+        Made with <span class="heart">♥</span> by The Tech Margin
+      </footer>
+    </div>
+  </body>
+</html>

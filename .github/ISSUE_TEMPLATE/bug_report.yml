@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a problem with Brand Helper
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for filing a bug! Please do **not** include secrets, tokens, or `.env` values.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, including what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      description: Output of `node --version` (this project needs Node 20).
+      placeholder: v20.19.x
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, and where it ran (local dev / Vercel).
+    validations:
+      required: false

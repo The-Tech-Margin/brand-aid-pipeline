@@ -1,0 +1,12 @@
+title = "Brand Helper gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Template + lockfile/SBOM false positives"
+paths = [
+  '''\.env\.example$''',
+  '''package-lock\.json$''',
+  '''sbom\.json$''',
+]

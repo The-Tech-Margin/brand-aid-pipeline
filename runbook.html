@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="TheTechMargin" />
+    <title>Brand Helper — Dev Runbook</title>
+    <style>
+      /* Mirrors the app's branded-dark skin: neutral gray surfaces, neon accents.
+         Standalone doc — open directly in a browser; no build step. */
+      :root {
+        --bg: #0a0a0a;
+        --card: #161616;
+        --muted: #1f1f1f;
+        --border: #2a2a2a;
+        --fg: #ededed;
+        --dim: #a1a1aa;
+        --pink: #e904e5;
+        --lime: #a1ff00;
+        --cyan: #09fff0;
+        --red: #ff0080;
+        --gold: #ff9500;
+        --radius: 3px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.6 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 48px 20px 80px;
+      }
+      header {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 24px;
+        margin-bottom: 8px;
+      }
+      h1 {
+        font-size: 2rem;
+        margin: 0 0 6px;
+        letter-spacing: -0.01em;
+      }
+      .grad {
+        background: linear-gradient(90deg, var(--cyan), var(--pink), var(--red));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+      }
+      .sub {
+        color: var(--dim);
+        margin: 0;
+      }
+      .toc {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 24px 0 8px;
+      }
+      .toc a {
+        font-size: 0.82rem;
+        color: var(--dim);
+        text-decoration: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 4px 10px;
+      }
+      .toc a:hover {
+        color: var(--fg);
+        border-color: var(--cyan);
+      }
+      h2 {
+        font-size: 1.25rem;
+        margin: 44px 0 12px;
+        padding-left: 10px;
+        border-left: 3px solid var(--pink);
+      }
+      h2.cyan {
+        border-color: var(--cyan);
+      }
+      h2.lime {
+        border-color: var(--lime);
+      }
+      h2.gold {
+        border-color: var(--gold);
+      }
+      p {
+        color: var(--fg);
+      }
+      a {
+        color: var(--cyan);
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.86em;
+        background: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1px 5px;
+      }
+      pre {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        overflow-x: auto;
+      }
+      pre code {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 0.84rem;
+        line-height: 1.7;
+      }
+      .cmt {
+        color: var(--dim);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 4px;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+      }
+      th {
+        background: var(--muted);
+        color: var(--dim);
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      td:first-child {
+        white-space: nowrap;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 1px 8px;
+        border-radius: 999px;
+        color: var(--bg);
+      }
+      .pill.cyan {
+        background: var(--cyan);
+      }
+      .pill.lime {
+        background: var(--lime);
+      }
+      .pill.gold {
+        background: var(--gold);
+      }
+      .pill.red {
+        background: var(--red);
+        color: var(--fg);
+      }
+      ul.check {
+        list-style: none;
+        padding: 0;
+      }
+      ul.check li {
+        padding: 6px 0 6px 28px;
+        position: relative;
+        border-bottom: 1px solid var(--border);
+      }
+      ul.check li::before {
+        content: '✓';
+        position: absolute;
+        left: 4px;
+        color: var(--lime);
+        font-weight: 700;
+      }
+      footer {
+        margin-top: 56px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--dim);
+        font-size: 0.85rem;
+        text-align: center;
+      }
+      footer .heart {
+        color: var(--red);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Brand Helper — <span class="grad">Dev Runbook</span></h1>
+        <p class="sub">
+          Local setup, triage, and the going-public checklist. A static doc — open it in any
+          browser.
+        </p>
+        <nav class="toc">
+          <a href="#start">Quick start</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#env">Environment &amp; secrets</a>
+          <a href="#triage">Triage</a>
+          <a href="#visitor-access">Visitor access</a>
+          <a href="#ci">CI gates</a>
+          <a href="#release">Going public</a>
+          <a href="#cmds">Commands</a>
+          <a href="#files">Key files</a>
+        </nav>
+      </header>
+
+      <h2 id="start">Quick start</h2>
+      <p>
+        The toolchain needs <strong>Node 20</strong> (see <code>.nvmrc</code>;
+        <code>&gt;=20.19</code>). Do not skip <code>nvm use</code> — see the Node note in Triage.
+      </p>
+      <pre><code>nvm use                      <span class="cmt"># Node 20</span>
+npm install
+cp .env.example .env.local   <span class="cmt"># then fill in (or: vercel env pull)</span>
+<span class="cmt"># apply supabase/migrations/0001_init.sql through 0008_brand.sql in order in the SQL editor</span>
+npm run seed                 <span class="cmt"># upload placeholder input assets</span>
+npm run dev                  <span class="cmt"># http://localhost:3000 → sign up on /login</span></code></pre>
+
+      <h2 id="architecture">Architecture &amp; project structure</h2>
+      <p>
+        Brand Helper follows a modular, feature-first Next.js layout — adapted to our domain and an
+        RSC-first reality (server components + server actions; minimal client state). App code lives
+        under <code>src/</code>; <code>public/</code>, <code>supabase/</code>,
+        <code>scripts/</code>, and <code>examples/</code> stay at the repo root.
+      </p>
+      <pre><code>src/
+├─ app/         <span class="cmt"># routes, layouts, route handlers, error/404 boundaries</span>
+├─ features/    <span class="cmt"># business features (UI + domain logic together)</span>
+│  ├─ auth/  brief/  dashboard/  creatives/  runs/
+│  ├─ editor/   <span class="cmt"># Konva in-app brand editor (client-only, ssr:false)</span>
+│  ├─ deliverables/ <span class="cmt"># branded PDF + social-asset builders (react-pdf + sharp)</span>
+│  └─ pipeline/ <span class="cmt"># orchestrator + compositor/compliance/legal/translate/sound</span>
+├─ components/  <span class="cmt"># shared, presentational</span>
+│  ├─ ui/       <span class="cmt"># primitives (Button, Input, Card, Dialog, Tabs…)</span>
+│  ├─ layout/   <span class="cmt"># site-header, footer</span>
+│  ├─ feedback/ <span class="cmt"># toasts, error detail</span>
+│  └─ theme/    <span class="cmt"># theme provider + toggles (the one bit of client state)</span>
+├─ services/    <span class="cmt"># external integrations: supabase/, image/ (AI Gateway)</span>
+├─ lib/         <span class="cmt"># framework-agnostic utils: format, slug, utils, logging</span>
+├─ types/       <span class="cmt"># shared generated types (Supabase database.ts)</span>
+└─ config/      <span class="cmt"># env.ts (server-only) + prohibited-terms</span></code></pre>
+      <table>
+        <thead>
+          <tr>
+            <th>Principle</th>
+            <th>How Brand Helper applies it</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>App Router</td>
+            <td>
+              Route groups (<code>(app)</code>), nested layouts, route handlers under
+              <code>src/app</code>.
+            </td>
+          </tr>
+          <tr>
+            <td>Feature-based</td>
+            <td>
+              Each domain owns its UI + logic in <code>src/features/&lt;domain&gt;</code>; web app
+              and CLI share <code>features/pipeline</code>.
+            </td>
+          </tr>
+          <tr>
+            <td>UI vs logic</td>
+            <td>
+              Presentational components in <code>components/</code>; data/logic in features &amp;
+              services; read layer per feature.
+            </td>
+          </tr>
+          <tr>
+            <td>Reusable components</td>
+            <td>
+              <code>components/ui</code> (primitives), <code>layout</code>, <code>feedback</code>,
+              <code>theme</code>.
+            </td>
+          </tr>
+          <tr>
+            <td>Centralized API layer</td>
+            <td>
+              <code>services/supabase</code> (3-tier clients + storage) and
+              <code>services/image</code> (Vercel AI Gateway — generate + edit).
+            </td>
+          </tr>
+          <tr>
+            <td>State management</td>
+            <td>
+              RSC-first — server components + server actions; only theme uses React context. No
+              Redux/Zustand.
+            </td>
+          </tr>
+          <tr>
+            <td>Shared utilities</td>
+            <td>
+              <code>lib/</code> — <code>format</code>, <code>slug</code>, <code>utils</code>,
+              <code>logging</code>.
+            </td>
+          </tr>
+          <tr>
+            <td>Strong typing</td>
+            <td>
+              Types inferred from zod schemas; generated DB types in <code>types/database.ts</code>.
+            </td>
+          </tr>
+          <tr>
+            <td>Env &amp; config</td>
+            <td>
+              <code>config/env.ts</code> (server-only, lazy) + <code>config/</code> data; never
+              hardcoded.
+            </td>
+          </tr>
+          <tr>
+            <td>Performance</td>
+            <td>
+              Server Components by default; sharp kept external; signed-URL images via
+              <code>next/image</code>.
+            </td>
+          </tr>
+          <tr>
+            <td>Code standards</td>
+            <td>
+              Absolute <code>@/</code> imports, ESLint + Prettier, named exports (no default
+              component exports).
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        <strong>Deliberately omitted</strong> (best practice for this app, not cargo-cult): no
+        <code>store/</code> (no global client state) and no top-level <code>hooks/</code> — the
+        single hook (<code>useTheme</code>) lives with its provider, and feature hooks live under
+        their feature.
+      </p>
+
+      <h2 id="env" class="cyan">Environment &amp; secrets</h2>
+      <p>
+        Secrets live only in Vercel env vars and a gitignored <code>.env.local</code>; only
+        <code>.env.example</code> (no real values) is committed. Server-only accessors live in
+        <code>src/config/env.ts</code> behind <code>import 'server-only'</code> with lazy getters,
+        so a missing key only errors when a route actually needs it — build and the reuse path work
+        without an AI Gateway key.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Scope</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>NEXT_PUBLIC_SUPABASE_URL</code></td>
+            <td><span class="pill cyan">browser</span></td>
+            <td>Project URL — safe to expose.</td>
+          </tr>
+          <tr>
+            <td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td>
+            <td><span class="pill cyan">browser</span></td>
+            <td>RLS-scoped anon key — safe to expose.</td>
+          </tr>
+          <tr>
+            <td><code>SUPABASE_SERVICE_ROLE_KEY</code></td>
+            <td><span class="pill red">server</span></td>
+            <td>Bypasses RLS. Never ships to the client. Rotate if ever shared.</td>
+          </tr>
+          <tr>
+            <td><code>AI_GATEWAY_API_KEY</code></td>
+            <td><span class="pill red">server</span></td>
+            <td>Vercel AI Gateway — image generation + the editor's AI ops. Generate/edit only.</td>
+          </tr>
+          <tr>
+            <td><code>SUPABASE_PROJECT_ID</code></td>
+            <td><span class="pill gold">CLI</span></td>
+            <td>Used only by <code>db:types</code>. Export inline.</td>
+          </tr>
+          <tr>
+            <td><code>PIPELINE_RUN_USER_ID</code></td>
+            <td><span class="pill gold">CLI</span></td>
+            <td>RLS owner UUID for headless <code>pipeline:run</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="triage" class="gold">Triage — symptom → cause → fix</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Symptom</th>
+            <th>Cause</th>
+            <th>Fix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <code>npm test</code> crashes at startup:
+              <code>ERR_INVALID_ARG_VALUE … styleText … ['underline','gray']</code>
+            </td>
+            <td>
+              Wrong Node. Node 21's <code>util.styleText</code> rejects the array form
+              Vitest/rolldown uses.
+            </td>
+            <td>Use Node 20: <code>nvm use</code>. CI pins it via <code>.nvmrc</code>.</td>
+          </tr>
+          <tr>
+            <td>
+              <code>tsc</code> errors: <code>Duplicate identifier 'LayoutProps'</code> in
+              <code>.next/types/routes.d 2.ts</code>
+            </td>
+            <td>
+              Stray macOS / cloud-sync <em>" 2"</em> duplicate files inside <code>.next</code>.
+            </td>
+            <td>
+              <code>find .next -name "* 2.*" -delete</code> or <code>rm -rf .next</code>, then
+              re-run.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Dev server shows old colors / radius after switching branches or
+              <code>git stash</code>
+            </td>
+            <td>Turbopack HMR cached a stale <code>globals.css</code> compile.</td>
+            <td>Restart the dev server (full reload won't clear the server cache).</td>
+          </tr>
+          <tr>
+            <td><code>Fontconfig error: Cannot load default config file</code> during tests</td>
+            <td>Benign — <code>sharp</code> font config noise in the test env.</td>
+            <td>Ignore; tests still pass.</td>
+          </tr>
+          <tr>
+            <td><code>npm run db:types</code> errors out</td>
+            <td><code>SUPABASE_PROJECT_ID</code> not set (intentionally not hardcoded).</td>
+            <td>
+              Run <code>SUPABASE_PROJECT_ID=xxxx npm run db:types</code>. The script writes via a
+              temp file + atomic <code>mv</code>, so a failed run never clobbers the committed
+              <code>src/types/database.ts</code>.
+            </td>
+          </tr>
+          <tr>
+            <td>App 500: <code>Missing required environment variable: …</code></td>
+            <td><code>.env.local</code> incomplete.</td>
+            <td>Fill it from <code>.env.example</code> (Supabase URL + anon + service role).</td>
+          </tr>
+          <tr>
+            <td>Image generation / editor AI op fails (reuse path + canvas edits work)</td>
+            <td>
+              <code>AI_GATEWAY_API_KEY</code> unset — getters are lazy, so only generate/edit error;
+              the editor's AI buttons disable and a 503 is returned.
+            </td>
+            <td>
+              Add <code>AI_GATEWAY_API_KEY</code>, or stick to reuse + non-AI edits for the demo.
+            </td>
+          </tr>
+          <tr>
+            <td>Data won't load / <code>schema must be one of…</code></td>
+            <td><code>brand_helper</code> schema not exposed in Supabase.</td>
+            <td>
+              Supabase → Project Settings → API → Exposed schemas → add <code>brand_helper</code>.
+            </td>
+          </tr>
+          <tr>
+            <td>Locked out at login (rate limited)</td>
+            <td>DB-backed login limiter (hashed-IP key) tripped.</td>
+            <td>Wait out the window, or clear the rate-limit rows in <code>brand_helper</code>.</td>
+          </tr>
+          <tr>
+            <td>CI <code>gitleaks</code> job fails</td>
+            <td>A secret-like string was committed.</td>
+            <td>
+              Remove the secret &amp; rotate it; only add genuine false positives to
+              <code>.gitleaks.toml</code>.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="visitor-access" class="gold">Visitor access requests</h2>
+      <p>
+        Brand Helper is invite-only. Prospective visitors request access from a public surface
+        (login, no-access, or landing page); admins review and grant access from the admin area.
+      </p>
+      <ul>
+        <li>
+          <strong>Request</strong> — the public "Request access" modal posts name / organization /
+          email to the <code>submitAccessRequest</code> server action, which rate-limits by IP,
+          validates, and inserts a row into <code>brand_helper.access_requests</code> with the
+          service role (anon has no table grants). If <code>RESEND_API_KEY</code> is set, the admin
+          gets a notification and the requester a confirmation; without it, the request still stores
+          and email is skipped.
+        </li>
+        <li>
+          <strong>Review</strong> — admins open <code>/admin</code> → <em>Requests</em> tab.
+          <em>Accept</em> sends a magic-link invite (and copies the name/organization onto the
+          member row); <em>Deny</em> closes the request.
+        </li>
+        <li>
+          <strong>Manage</strong> — the <em>Members</em> tab lists every visitor.
+          <em>Revoke</em> soft-sets <code>members.status = 'revoked'</code> (the app guard bounces
+          them on their next request; admins cannot be revoked); <em>Re-instate</em> restores
+          access.
+        </li>
+        <li>
+          <strong>Env</strong> — optional Resend vars: <code>RESEND_API_KEY</code>,
+          <code>RESEND_FROM</code> (verified sender), <code>REQUEST_NOTIFY_EMAIL</code> (where new
+          requests are emailed; defaults to the seeded owner). See migration
+          <code>0010_access_requests.sql</code>.
+        </li>
+      </ul>
+
+      <h2 id="ci" class="lime">CI gates</h2>
+      <p>
+        GitHub Actions (<code>.github/workflows/ci.yml</code>) runs on every push and PR. Reproduce
+        locally on Node 20:
+      </p>
+      <pre><code>npm run lint
+npm run format:check
+npm run docs:check     <span class="cmt"># design-system.md tables in sync with globals.css</span>
+npm run typecheck
+npm test
+npm run build          <span class="cmt"># needs no live secrets (lazy env)</span>
+npm audit --audit-level=high
+npm run sbom           <span class="cmt"># CycloneDX SBOM</span>
+<span class="cmt"># + gitleaks secret scan over full history</span></code></pre>
+
+      <h2 id="release" class="cyan">Going public — checklist</h2>
+      <ul class="check">
+        <li>No secrets in the working tree or git history (gitleaks clean over full history).</li>
+        <li>
+          <code>.env.local</code>, <code>.vercel</code>, <code>.next</code> all gitignored — verify
+          with <code>git check-ignore</code>.
+        </li>
+        <li>
+          <code>LICENSE</code> present; <code>README.md</code> reflects public status (not
+          "private").
+        </li>
+        <li>
+          No live backend identifiers hardcoded — <code>db:types</code> reads
+          <code>SUPABASE_PROJECT_ID</code>.
+        </li>
+        <li><code>npm run docs:check</code> green — docs match the token source of truth.</li>
+        <li>SBOM regenerated; <code>npm audit</code> shows 0 high/critical.</li>
+        <li>Rotate the Supabase service-role key if it was ever shared outside Vercel.</li>
+      </ul>
+
+      <h2 id="cmds" class="gold">Command reference</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>npm run dev</code></td>
+            <td>Next dev server on :3000</td>
+          </tr>
+          <tr>
+            <td><code>npm run seed</code></td>
+            <td>Upload placeholder input assets (reuse demo)</td>
+          </tr>
+          <tr>
+            <td><code>npm run pipeline:run -- examples/brief.summer-glow.json</code></td>
+            <td>Headless pipeline run → <code>reports/</code></td>
+          </tr>
+          <tr>
+            <td><code>npm run docs:gen</code></td>
+            <td>Regenerate design-system.md token tables from globals.css</td>
+          </tr>
+          <tr>
+            <td><code>npm run db:types</code></td>
+            <td>Regenerate Supabase types (needs <code>SUPABASE_PROJECT_ID</code>)</td>
+          </tr>
+          <tr>
+            <td><code>npm run sbom</code></td>
+            <td>Regenerate the CycloneDX SBOM</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="files" class="cyan">Key files</h2>
+      <p>Paths are relative to the repo root — click through when reading this from the project.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>What it is</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <a href="src/app/globals.css"><code>src/app/globals.css</code></a>
+            </td>
+            <td>Design tokens — runtime source of truth for color &amp; radius</td>
+          </tr>
+          <tr>
+            <td>
+              <a href="design-system.md"><code>design-system.md</code></a>
+            </td>
+            <td>Token tables (auto-generated) + component patterns</td>
+          </tr>
+          <tr>
+            <td>
+              <a href="src/config/env.ts"><code>src/config/env.ts</code></a>
+            </td>
+            <td>Server-only env accessors (lazy; <code>publicEnv</code> for the client)</td>
+          </tr>
+          <tr>
+            <td>
+              <a href=".env.example"><code>.env.example</code></a>
+            </td>
+            <td>Env template — copy to <code>.env.local</code></td>
+          </tr>
+          <tr>
+            <td>
+              <a href=".github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>
+            </td>
+            <td>CI gates (lint, format, docs, types, test, build, audit, sbom, gitleaks)</td>
+          </tr>
+          <tr>
+            <td>
+              <a href=".gitleaks.toml"><code>.gitleaks.toml</code></a>
+            </td>
+            <td>Secret-scan allowlist</td>
+          </tr>
+          <tr>
+            <td>
+              <a href="supabase/migrations/"><code>supabase/migrations/</code></a>
+            </td>
+            <td>Postgres schema, RLS policies, private storage bucket</td>
+          </tr>
+          <tr>
+            <td>
+              <a href="scripts/gen-docs.ts"><code>scripts/gen-docs.ts</code></a>
+            </td>
+            <td>Regenerates the design-system token tables from the CSS</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <footer>
+        <p>
+          Brand Helper dev runbook · see <a href="README.md">README.md</a> &amp;
+          <a href="design-system.md">design-system.md</a>
+        </p>
+        <p>made with <span class="heart">♥</span> by <span class="grad">thetechmargin</span></p>
+      </footer>
+    </div>
+  </body>
+</html>

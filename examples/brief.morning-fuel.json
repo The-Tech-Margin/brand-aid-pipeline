@@ -1,0 +1,21 @@
+{
+  "campaign_name": "Morning Fuel — Q3 Launch",
+  "products": [
+    {
+      "name": "BrewBox Cold Brew",
+      "description": "Ready-to-drink cold brew coffee, smooth low-acid blend, no added sugar",
+      "input_assets": ["brewbox-can.png"]
+    },
+    {
+      "name": "OatRise Barista Oat Milk",
+      "description": "Barista-grade oat milk that froths like dairy, neutral taste, plant-based",
+      "input_assets": []
+    }
+  ],
+  "target_region": "Germany",
+  "target_audience": "Commuters and remote workers, 22-38, busy mornings, sustainability-minded",
+  "campaign_message": "Your best morning, on repeat",
+  "locale": "de-DE",
+  "brand_palette": ["#ff9500", "#a1ff00"],
+  "aspect_ratios": ["1:1", "9:16", "16:9"]
+}
