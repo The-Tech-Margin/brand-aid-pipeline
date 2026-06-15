@@ -9,12 +9,42 @@
 
 Turn a campaign brief into on-brand, ready-to-post social ad creatives at scale. Brand Helper
 reuses uploaded hero imagery where it exists, generates the rest with **your selected image model**
-(via the Vercel AI Gateway), composites
+(via a pluggable AI image gateway), composites
 final creatives in **three aspect ratios** with a localized message overlay and brand framing, runs
 **brand-compliance** and **legal-content** checks, and persists everything to **your Postgres-compatible
 backend** (row-level security + object storage) — all behind a private, themeable UI.
 
 > Author: **@thetechmargin** · © 2026 TheTechMargin
+
+---
+
+## Features
+
+- **Brief → creatives pipeline.** Describe a campaign as a form or JSON/YAML brief; Brand Helper
+  **reuses** an uploaded hero where one exists and **generates** the rest, then a deterministic
+  **sharp** compositor renders **1:1 / 9:16 / 16:9** from a single hero master with a localized
+  message overlay + brand framing. Runs **inline** or **chunked** (auto-selected, overridable).
+- **Pick your image model.** OpenAI (`gpt-image-1`), Replicate/FLUX, or Google (Imagen), per campaign
+  in the brief **and** per generation in the editor — all behind a single AI-gateway key.
+- **Brand-compliance + legal checks.** Logo presence, brand-color proximity, and WCAG contrast
+  heuristics plus a prohibited-term scan flag off-brand or risky creatives before they ship.
+- **In-app editor.** A Konva canvas (no external SDK): add on-brand text + your logo, move / resize /
+  rotate, **generate or change the background from a prompt** with one-click idea chips, **upload or
+  pick a background from your library**, remove the background, and save back — editing a campaign
+  creative or starting a standalone design.
+- **Personal library.** Every upload **and** generated creative in one place — search, filter,
+  upload, and delete, with a per-visitor storage quota (admins exempt).
+- **Run reports + export.** Live progress, compliance pass rate, legal flags, and reuse-vs-generate
+  counts; one-click JSON/Markdown export, a ZIP of every creative by product → ratio, plus branded
+  PDFs, spec sheets, and platform-sized social assets.
+- **Design studio.** Your colors, fonts, logo, and decorative font — saved per user with an
+  admin-set global default; a token-driven, WCAG-AA UI in light or dark.
+- **Invite-only access + admin.** Passwordless magic-link sign-in, a public **Request access** flow
+  with admin review (accept / deny / revoke), and strict per-user row-level isolation; roles are
+  defined in the database, never by app code.
+- **Open-source & self-hostable.** MIT-licensed; runs on **any Postgres-compatible backend** (RLS +
+  object storage) — no brand hostname baked in. CI gates (lint / format / types / tests / build),
+  a committed SBOM, gitleaks secret scanning, Dependabot, and WCAG 2.1 AA throughout.
 
 ---
 
@@ -24,8 +54,8 @@ Brand Helper is an **open-source design toolkit for solo founders and small busi
 is agency-quality, on-brand social creative without the agency, the per-seat SaaS, or a designer on
 call. Bring a one-line brief; get back ready-to-post creatives in three aspect ratios, on your own
 colors and logo, with brand-compliance and legal checks already done. Self-host it, theme it, and run
-your whole pipeline on your own Postgres backend + Vercel for the cost of the image-model calls.
-(Supabase is one easy option; any Postgres + RLS + object storage works.)
+your whole pipeline on your own infrastructure for the cost of the image-model calls — any
+Postgres-compatible backend (row-level security + object storage) and any Next.js host work.
 
 The same engine scales up: a **global consumer-goods team** launching hundreds of localized campaigns
 a month — drowning in manual production, inconsistent brand quality, and slow approvals — gets the
@@ -72,8 +102,9 @@ global default), `editor/` (Konva in-app brand editor),
 `deliverables/` (branded PDF + social-asset builders),
 `runs/` (report formatting + read layer), and `pipeline/` (orchestrator + chunked runner +
 persistence, with its `compositor/` (sharp), `compliance/`, `legal/`, `translate/`, `sound/` (stub)
-processing modules). External integrations live in `src/services/` (`supabase/`, `image/` — Vercel
-AI Gateway generate + edit); shared presentational UI in `src/components/{ui,layout,theme}`;
+processing modules). External integrations live in `src/services/` (the database + object-storage
+clients, and `image/` — the AI image-gateway generate + edit client); shared presentational UI in
+`src/components/{ui,layout,theme}`;
 cross-cutting helpers in `src/lib/` (`logging/`, format/slug/utils); generated DB types in
 `src/types/`; env + config in `src/config/`. The web UI and the CLI share the same
 `src/features/pipeline` core.
@@ -85,9 +116,11 @@ cross-cutting helpers in `src/lib/` (`logging/`, format/slug/utils); generated D
 Brand Helper is **invite-only and passwordless** — there is no public sign-up and no anonymous/guest
 browsing of the workspace.
 
-**Requesting access.** There is no self-service request form: **ask an admin to invite your email**.
-Admins invite people by email from the in-app **Members** area; you receive a sign-in link by email.
-If you sign in without an invite you land on a friendly **"Invite only"** page and nothing else.
+**Requesting access.** Click **Request access** on the sign-in or landing page and submit your name,
+organization, and email. An admin reviews the request in the in-app **Admin → Requests** queue and
+**accepts** (which sends your sign-in link) or declines it; admins can also invite people directly by
+email. If you sign in without an active membership you land on a friendly **"Invite only"** page with
+a request-access button and nothing else.
 
 **Signing in (magic link).** Go to `/login`, enter your email, and choose **Email me a sign-in link**.
 Open the email and click the link — it lands on `/auth/callback`, activates your membership, and drops
@@ -96,12 +129,14 @@ prompt is deliberately generic and never reveals whether an email is on the invi
 
 **Roles.**
 
-- **Admin** — invite and manage members, and publish an app-wide default theme + brand. Admins are
-  defined in the database (`brand_helper.admin_allowlist`); a trigger stamps the role, so app code can
-  never grant admin by mistake.
+- **Admin** — review access requests (accept / deny), manage members (invite, **revoke / re-instate**),
+  and publish an app-wide default theme + brand. Admins are defined in the database
+  (`brand_helper.admin_allowlist`); a trigger stamps the role, so app code can never grant admin by
+  mistake.
 - **Visitor** — a normal invited member: runs the full pipeline (create campaigns, generate/edit
-  creatives, export) on their **own** data, isolated per user by row-level security. This is the
-  self-serve "just let me make creatives" experience.
+  creatives, manage a personal **Library**, export) on their **own** data, isolated per user by
+  row-level security, within a storage quota. This is the self-serve "just let me make creatives"
+  experience.
 
 **First admin (bootstrap).** Add your email to `brand_helper.admin_allowlist` (migration `0006` or a
 SQL insert), create an auth user in your auth provider (public sign-ups are off), then sign in
@@ -114,8 +149,9 @@ round-trip. It is hard-blocked in production (NODE_ENV guard + the proxy).
 ## Using the app & getting help
 
 After signing in, the **Dashboard** lists your campaigns, **New campaign** (`/campaigns/new`) starts a
-brief, and **Reports** collects run reports and exports. Theme, brand, and the design studio live
-under **Design** (`/theme`).
+brief, **Reports** collects run reports and exports, the **Editor** (`/editor`) is a standalone design
+canvas, and the **Library** (`/library`) holds your uploads + generated creatives. Theme, brand, and
+the design studio live under **Design** (`/theme`).
 
 **Help is always one tap (or one keystroke) away:**
 
@@ -135,25 +171,17 @@ under **Design** (`/theme`).
 ```bash
 nvm use                 # Node 20 (see .nvmrc) — the toolchain needs >=20.19
 npm install
-cp .env.example .env.local   # then fill in (or: vercel env pull --environment=production .env.local)
+cp .env.example .env.local   # then fill in your backend + gateway keys
 ```
 
-Apply the database schema to your Postgres backend (any SQL client or your provider's CLI), in order:
+Apply the numbered SQL migrations (in the repo's `migrations` folder) to your database, in order —
+`0001_init.sql` (tables, RLS, private storage bucket) through the latest. Highlights: `0003`
+(invite-only membership + RLS), `0004` (exposes the `brand_helper` schema to the REST API), `0005`
+(least-privilege anon hardening), `0006` (admin allowlist + role trigger), `0007`/`0008` (themes +
+per-user brand), `0010` (visitor access requests), `0011` (per-asset bytes for storage quota).
 
-```
-supabase/migrations/0001_init.sql   # tables, RLS, private storage bucket
-supabase/migrations/0002_run_state_and_rate_limit.sql
-supabase/migrations/0003_members_invites.sql   # invite-only membership + RLS
-supabase/migrations/0004_expose_brand_helper.sql   # expose schema to the PostgREST API
-supabase/migrations/0005_strict_anon_grants.sql   # least-privilege anon hardening
-supabase/migrations/0006_admin_at_db_layer.sql   # admin allowlist + role trigger
-supabase/migrations/0007_themes.sql   # user themes + admin-set global default theme
-supabase/migrations/0008_brand.sql   # per-user brand identity + admin-set global default
-```
-
-Migration `0004` auto-exposes the `brand_helper` schema to the REST API. If you skipped it (or created
-the tables by hand), expose the schema to your REST API (e.g. PostgREST's exposed-schemas config) per
-your provider. Then:
+`0004` exposes the `brand_helper` schema to the REST layer; if your setup needs it, expose that schema
+to your REST API (e.g. PostgREST's exposed-schemas config) per your provider. Then:
 
 ```bash
 npm run seed       # upload placeholder input assets so reuse-vs-generate is demoable
@@ -167,20 +195,22 @@ production (NODE_ENV guard + the proxy) and never exists in a production build.
 
 ### Environment variables
 
-| Variable                        | Scope       | Required | Purpose                                                                  |
-| ------------------------------- | ----------- | -------- | ------------------------------------------------------------------------ |
-| `NEXT_PUBLIC_SUPABASE_URL`      | browser     | yes      | Backend REST/API base URL                                                |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser     | yes      | Public client key (RLS-scoped)                                           |
-| `SUPABASE_SERVICE_ROLE_KEY`     | server-only | yes      | Service/admin credentials — pipeline writes + signed URLs (bypasses RLS) |
-| `SUPABASE_DB_SCHEMA`            | server-only | no       | Defaults to `brand_helper`                                               |
-| `SUPABASE_STORAGE_BUCKET`       | server-only | no       | Defaults to `brand-helper`                                               |
-| `AI_GATEWAY_API_KEY`            | server-only | gen path | Vercel AI Gateway key — image generation + AI edits                      |
-| `SOUND_ENABLED`                 | server-only | no       | Feature flag for the sound stub (keep `false`)                           |
-| `NEXT_PUBLIC_APP_NAME`          | browser     | no       | UI label                                                                 |
-| `NEXT_PUBLIC_SITE_URL`          | browser     | prod     | Stable base URL for auth email redirects (your domain)                   |
-| `NEXT_PUBLIC_APP_ORIGINS`       | browser     | no       | Extra allowed auth-callback origins, comma-separated                     |
-| `PIPELINE_RUN_USER_ID`          | server-only | CLI      | Seeded auth user UUID the CLI runs own (RLS owner)                       |
-| `DEV_LOGIN_EMAIL`               | server-only | dev      | Email for `GET /auth/dev-login` (local builds only)                      |
+[`.env.example`](.env.example) is the canonical, fully annotated list. At a high level:
+
+| Variable                      | Scope       | Required | Purpose                                                       |
+| ----------------------------- | ----------- | -------- | ------------------------------------------------------------- |
+| Backend URL + public key      | browser     | yes      | Your database/storage REST base URL + public (RLS-scoped) key |
+| Backend service credentials   | server-only | yes      | Privileged backend key — pipeline writes + signed URLs        |
+| Backend schema + bucket names | server-only | no       | Default to `brand_helper` / `brand-helper`                    |
+| `AI_GATEWAY_API_KEY`          | server-only | gen path | AI image-gateway key — image generation + AI edits            |
+| `SOUND_ENABLED`               | server-only | no       | Feature flag for the sound stub (keep `false`)                |
+| `NEXT_PUBLIC_APP_NAME`        | browser     | no       | UI label                                                      |
+| `NEXT_PUBLIC_SITE_URL`        | browser     | prod     | Stable base URL for auth email redirects (your domain)        |
+| `NEXT_PUBLIC_APP_ORIGINS`     | browser     | no       | Extra allowed auth-callback origins, comma-separated          |
+| `PIPELINE_RUN_USER_ID`        | server-only | CLI      | Seeded auth user UUID the CLI runs as (RLS owner)             |
+| `DEV_LOGIN_EMAIL`             | server-only | dev      | Email for `GET /auth/dev-login` (local builds only)           |
+
+The exact backend key names live in [`.env.example`](.env.example).
 
 **Access is invite-only (magic link).** Sign-in is passwordless — `/login` emails a
 one-time link. Disable public sign-ups in your auth provider (email provider settings)
@@ -193,21 +223,20 @@ via magic link.
 
 **Auth email redirects.** Sign-in links are built from
 [`src/lib/get-url.ts`](src/lib/get-url.ts), which is fully env-driven — **no host is hardcoded** —
-resolving `NEXT_PUBLIC_SITE_URL` (prod) → `NEXT_PUBLIC_VERCEL_URL` (Vercel auto, previews) →
+resolving `NEXT_PUBLIC_SITE_URL` (prod) → a host-provided per-deploy URL (previews) →
 `http://localhost:3000` (local). Set `NEXT_PUBLIC_SITE_URL` to your own stable domain and add its
 `…/auth/callback` to your auth provider's redirect-URL allowlist, or links are
-rejected. Any extra origins the app also answers to (a vanity domain, a stable `*.vercel.app` alias)
+rejected. Any extra origins the app also answers to (a vanity domain, a stable preview alias)
 go in `NEXT_PUBLIC_APP_ORIGINS` (comma-separated) so callbacks from them validate too.
 
 Env getters in `src/config/env.ts` are lazy, so a missing `AI_GATEWAY_API_KEY` only errors when a run
 actually generates (or an AI edit runs) — the app, build, and reuse path all work without it.
 
-**Image generation (Vercel AI Gateway).** The "generate" path and the editor's AI ops route through
-the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) with a single `AI_GATEWAY_API_KEY`. The
-campaign brief's **Image model** dropdown picks the provider per campaign — OpenAI (`gpt-image-1`),
-Replicate/FLUX (`bfl/flux-2-pro`), or Google (Imagen) — mapped in
-[`src/services/image/model-map.ts`](src/services/image/model-map.ts). The compositor still overlays
-text/logo, so the model only produces a clean hero with negative space.
+**Image generation (AI gateway).** The "generate" path and the editor's AI ops route through an AI
+image gateway with a single `AI_GATEWAY_API_KEY`. The **Image model** dropdown — in the campaign brief
+**and** in the editor — picks the provider: OpenAI (`gpt-image-1`), Replicate/FLUX (`bfl/flux-2-pro`),
+or Google (Imagen), mapped in [`src/services/image/model-map.ts`](src/services/image/model-map.ts).
+The compositor still overlays text/logo, so the model only produces a clean hero with negative space.
 
 **In-app editor.** Each creative has an **Edit in editor** action (and a **New design** entry on the
 creatives page) that opens a Konva canvas ([`src/features/editor`](src/features/editor/brand-editor.tsx)):
@@ -221,12 +250,12 @@ campaign PDF, a brand style sheet, per-creative spec sheets, and platform-sized 
 
 ---
 
-## Deploy to Vercel
+## Deploy
 
-The project is linked (`.vercel/project.json`). Set the same variables from the table above in
-**Vercel → Settings → Environment Variables** (your hosting provider's database integration, if any,
-can populate the backend set automatically; add `AI_GATEWAY_API_KEY`). `next build` needs no live
-secrets. Then push — CI runs on every PR and Vercel builds from `main`.
+It's a standard **Next.js** app — deploy it to any Next.js-capable host. Set the same environment
+variables from the table above in your host's project settings (some hosts can populate the backend
+keys from a database integration automatically; you always add `AI_GATEWAY_API_KEY`). `next build`
+needs no live secrets, and CI runs the full gate suite on every PR.
 
 ---
 
@@ -239,19 +268,18 @@ source** — auth URLs come entirely from env (see [`src/lib/get-url.ts`](src/li
 up your own instance:
 
 1. **Point it at your own Postgres-compatible backend (with RLS + object storage).** Stand up a
-   backend, run the migrations in `supabase/migrations/` in order, and disable public sign-ups in your
+   backend, run the repo's numbered SQL migrations in order, and disable public sign-ups in your
    auth provider. Set the backend env vars and **rotate any keys** that were ever shared. _(Migration
    `0004` adds `brand_helper` to the REST API's exposed-schema allowlist; on a dedicated backend it
    simply exposes your one schema.)_
-2. **Seed your first admin.** Replace the seeded owner email in
-   `supabase/migrations/0006_admin_at_db_layer.sql` (and `DEV_LOGIN_EMAIL`) with your own, or insert
-   your email into `brand_helper.admin_allowlist`.
+2. **Seed your first admin.** Replace the seeded owner email in `0006_admin_at_db_layer.sql` (and
+   `DEV_LOGIN_EMAIL`) with your own, or insert your email into `brand_helper.admin_allowlist`.
 3. **Set the app identity.** `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_SITE_URL` (your domain), and
    `NEXT_PUBLIC_APP_ORIGINS` for any extra origins. Swap the default logo at `public/images/logo.png`,
    and tune the brand palette in `src/app/globals.css` (or just use the in-app Design studio).
-4. **Deploy to your Vercel.** Import the repo, add the env vars above, and create an
-   [AI Gateway key](https://vercel.com/docs/ai-gateway) for `AI_GATEWAY_API_KEY`. Push — Vercel builds
-   from `main` and CI runs on every PR.
+4. **Deploy to your host.** Import the repo into any Next.js-capable host, add the env vars above, and
+   create an AI image-gateway key for `AI_GATEWAY_API_KEY`. Push — your host builds from `main` and CI
+   runs on every PR.
 5. **Repoint docs.** Update the GitHub org/repo in the README badges and issue templates, the
    maintainer email in `SECURITY.md` / `CODE_OF_CONDUCT.md`, and the `LICENSE` copyright holder.
 
@@ -269,10 +297,9 @@ serverless time limits, so the CLI runs in-process (equivalent to inline) and pr
 web app would auto-select.
 
 Other scripts: `npm run lint` · `typecheck` · `test` · `build` · `format` · `seed` · `db:types`
-(regenerate `src/types/database.ts` from the live schema — set `SUPABASE_PROJECT_ID`
-first: `SUPABASE_PROJECT_ID=xxxx npm run db:types`) · `docs:gen` (regenerate the
-[design-system.md](design-system.md) token tables from `src/app/globals.css`; CI runs `docs:check`) ·
-`sbom`.
+(regenerate `src/types/database.ts` from your database schema — see the script for the project-ref env
+var it expects) · `docs:gen` (regenerate the [design-system.md](design-system.md) token tables from
+`src/app/globals.css`; CI runs `docs:check`) · `sbom`.
 
 **Stuck?** See the dev triage runbook — [runbook.html](runbook.html) (open in a browser): local
 setup, a symptom → cause → fix table, CI gates, and the going-public checklist.
@@ -320,8 +347,9 @@ compliance, legal, and log detail is on its run report page.
 - **Dual run execution.** `inline` finishes a small run in one background task; `chunked` self-chains
   one product per serverless invocation to dodge function timeouts on large briefs. The mode is
   auto-selected by estimated work and overridable in the UI and CLI.
-- **Image generation via the AI Gateway.** A single Vercel AI Gateway key fronts OpenAI / FLUX /
-  Imagen, chosen per campaign in the brief. The pipeline generates one high-res master per product and
+- **Image generation via an AI gateway.** A single AI-gateway key fronts OpenAI / FLUX /
+  Imagen, chosen per campaign in the brief (and per generation in the editor). The pipeline generates
+  one high-res master per product and
   composites every ratio locally (cheaper + reproducible than N generations). Failures retry with
   backoff and never abort the whole campaign. The same gateway powers the editor's AI edit ops.
 - **Editor is custom, not a third-party SDK.** The in-app editor is built on Konva (MIT) so brand
@@ -360,8 +388,8 @@ compliance, legal, and log detail is on its run report page.
 
 ## Security notes
 
-- Secrets live only in Vercel env vars and a gitignored `.env.local`; only `.env.example` (no real
-  values) is committed. No secrets appear in tracked files or git history.
+- Secrets live only in your host's env vars and a gitignored `.env.local`; only `.env.example` (no
+  real values) is committed. No secrets appear in tracked files or git history.
 - RLS isolates every row per user; the service role is used server-side only and always sets
   `user_id` explicitly. Reads go through the anon key as the signed-in user.
 - The auth boundary is enforced twice: optimistic redirect in the proxy and authoritative `getUser()`
@@ -371,7 +399,7 @@ compliance, legal, and log detail is on its run report page.
 - CI runs `npm audit --audit-level=high` (0 high/critical), **gitleaks** secret scanning, and
   regenerates the SBOM. Dependabot keeps dependencies patched.
 - **Rotate** the database service/admin credentials (service role) if they have ever been shared
-  outside Vercel.
+  outside your host's secret store.
 
 ### SBOM
 
@@ -418,7 +446,7 @@ convention (the [CONTRIBUTING.md](CONTRIBUTING.md) pre-PR checklist) and authori
 
 ## Demo video script (2–3 min)
 
-1. Show `.env.local` / Vercel env, then `npm run dev`.
+1. Show `.env.local` / your host's env, then `npm run dev`.
 2. Load `examples/brief.summer-glow.yaml` via paste/upload (and show the form path).
 3. Start the run; watch live progress stream in the run report.
 4. Browse creatives by product → ratio; open the lightbox; note reused vs generated badges and the
